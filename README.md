@@ -1,44 +1,40 @@
-# Aetheris Vault
+# Aetheris
 
-Coffre-fort de mots de passe **100 % local**. Aucune base de données, aucun serveur, aucun compte.
-Tout est chiffré et stocké dans le `localStorage` de votre navigateur.
+Générateur et coffre-fort de mots de passe **100 % local** : tout s'exécute dans le navigateur, rien n'est envoyé à un serveur.
 
-## Ce qui est sûr à publier
+## Fonctionnalités
 
-Le code de cette app ne contient **aucune** de vos données. Vos identifiants sont
-enregistrés uniquement dans le navigateur de votre appareil, chiffrés avec votre
-mot de passe maître (AES-GCM 256, clé dérivée en PBKDF2 250 000 itérations).
+- **Générateur** : mot de passe, phrase de passe (1 024 mots français, 10 bits/mot) ou code PIN. Aléa `crypto.getRandomValues` avec tirage par rejet (aucun biais de modulo), entropie calculée exactement (inclusion–exclusion).
+- **Vérificateur** : estimation de robustesse qui repère les motifs (dictionnaire, clavier, dates, répétitions, leet), temps de cassage selon 3 scénarios, et recherche dans les fuites Have I Been Pwned en k-anonymat.
+- **Coffre-fort** : identifiants, catégories, favoris, codes 2FA (TOTP RFC 6238), fichiers chiffrés, audit de santé, verrouillage automatique, effacement du presse-papiers.
+- **Import / export** : CSV de Chrome, Edge, Firefox, Safari, Bitwarden et 1Password. Sauvegarde chiffrée et restauration.
+- **PWA** : fonctionne hors ligne et peut s'installer comme une application.
 
-Publier le site en public = publier une app vide. Chaque visiteur ne voit que ses
-propres données, dans son propre navigateur.
+## Sécurité
 
-## Déployer sur Vercel
+| | |
+|---|---|
+| Chiffrement | AES-256-GCM, IV aléatoire de 96 bits par écriture |
+| Dérivation | PBKDF2-HMAC-SHA256, 600 000 itérations, sel de 128 bits |
+| Clés | Clé de données aléatoire (DEK) enveloppée par la clé dérivée (KEK) |
+| Stockage | IndexedDB, chaque fichier chiffré séparément |
+| En-têtes | CSP stricte (`script-src 'self'`), HSTS, `frame-ancestors 'none'` |
 
-1. Renommez `vault.html` en **`index.html`** (Vercel sert `index.html` par défaut).
-   Vous pouvez garder `forge.html` (le générateur) à côté.
-2. Créez un dépôt GitHub et poussez les fichiers :
-   ```bash
-   git init
-   git add .
-   git commit -m "Aetheris Vault"
-   git branch -M main
-   git remote add origin https://github.com/VOTRE_USER/aetheris-vault.git
-   git push -u origin main
-   ```
-3. Sur [vercel.com](https://vercel.com) : **Add New → Project → Import** votre dépôt.
-   Framework preset : **Other**. Aucun build command. Cliquez **Deploy**.
-4. Terminé. Votre coffre est en ligne en HTTPS (obligatoire pour le chiffrement Web Crypto).
+Toute la logique cryptographique tient dans [`src/lib/crypto.ts`](src/lib/crypto.ts) et [`src/lib/storage.ts`](src/lib/storage.ts).
 
-## À NE JAMAIS committer
+Les coffres créés par la version 1 (`vault.html`, clé `aetheris_vault_v1` dans le localStorage) sont **migrés automatiquement** au premier déverrouillage, fichiers compris.
 
-- Les fichiers `aetheris-vault-*.json` que vous exportez : **ils ne sont PAS chiffrés**.
-  Ils servent de sauvegarde/transfert entre appareils, à garder en privé.
-- Le `.gitignore` fourni les exclut déjà par précaution.
+## Développement
 
-## Bon à savoir
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm test         # tests unitaires (Vitest), dont les vecteurs officiels RFC 4226 / 6238
+npm run build    # build de production dans dist/
+```
 
-- **Pas de récupération** : si vous oubliez le mot de passe maître, les données chiffrées
-  sont définitivement illisibles. Notez-le en lieu sûr.
-- `localStorage` est **par navigateur et par appareil** — il n'y a pas de synchronisation.
-  Utilisez Export/Import JSON pour transférer votre coffre ailleurs.
-- Vider le cache/les données du site efface le coffre local. Faites des exports réguliers.
+Stack : React 19, TypeScript, Vite, Tailwind CSS 4, wouter, idb-keyval.
+
+## Déploiement
+
+Site statique : `vercel.json` gère la réécriture SPA, les en-têtes de sécurité et les redirections des anciennes URL (`/forge.html`, `/vault.html`).

@@ -1,0 +1,21 @@
+{
+  "name": "Aetheris — Mots de passe",
+  "short_name": "Aetheris",
+  "description": "Générateur et coffre-fort de mots de passe chiffré, 100 % local.",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f5f0",
+  "theme_color": "#f5f5f0",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ],
+  "shortcuts": [
+    { "name": "Ouvrir le coffre", "url": "/coffre" },
+    { "name": "Vérifier un mot de passe", "url": "/verifier" }
+  ]
+}
