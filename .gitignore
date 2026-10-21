@@ -29,3 +29,6 @@ aetheris-export-*.json
 aetheris-vault-*.json
 *.csv
 .vercel
+
+.vercel
+.env*
